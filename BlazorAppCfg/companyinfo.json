@@ -1,0 +1,8 @@
+{
+  "PhoneNumber": "123-456-789",
+  "Location": "Warszawa, Polska",
+  "CompanyInfo": {
+    "PhoneNumber": "222-233-34",
+    "Location": "Krak\u00F3w ul  Samuela Lindego  1"
+  }
+}

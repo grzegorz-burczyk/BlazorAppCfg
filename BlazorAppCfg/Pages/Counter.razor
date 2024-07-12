@@ -1,0 +1,86 @@
+﻿@page "/counter"
+
+<PageTitle>Counter</PageTitle>
+
+
+<h3>Informacje o Firmie</h3>
+
+<button @onclick="ToggleEditMode">@(_isEditMode ? "Zakończ Edycję" : "Edytuj")</button>
+
+<div class="info-container">
+    <div class="info-section @(_isEditMode ? "edit-mode" : "")">
+        @if (_isEditMode)
+        {
+            <label for="phone">Numer telefonu:</label>
+            <input id="phone" @bind="_phoneNumber" class="highlight-input" />
+        }
+        else
+        {
+            <p>Numer telefonu: @_phoneNumber</p>
+        }
+    </div>
+    <p>To jest napis  rozdzielający</p>
+    <h2>A ten zapis  trzeba poprawiać</h2>
+    <div class="info-section h2 @(_isEditMode ? "edit-mode" : "")">
+        @if (_isEditMode)
+        {
+            <label for="location">Lokalizacja firmy:</label>
+            <input id="location" @bind="_location" class="highlight-input" />
+        }
+        else
+        {
+            <p>Lokalizacja firmy: @_location</p>
+        }
+
+    </div>
+</div>
+
+<style>
+    .highlight-input {
+        border: 1px solid orange;
+        padding: 1px;
+    }
+</style>
+
+@code {
+    private bool _isEditMode = false;
+    private string _phoneNumber;
+    private string _location;
+    private string _initialPhoneNumber;
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; }
+
+    [Inject]
+    private ICompanyInfoService CompanyInfoService { get; set; }
+
+    protected override void OnInitialized()
+    {
+        var companyInfo = CompanyInfoService.GetCompanyInfo();
+        _phoneNumber = companyInfo.PhoneNumber;
+        _initialPhoneNumber = _phoneNumber;
+        _location = companyInfo.Location;
+    }
+
+    private async Task ToggleEditMode()
+    {
+        if (_isEditMode)
+        {
+            bool saveChanges = await JSRuntime.InvokeAsync<bool>("confirm", "Czy chcesz zapisać zmiany?");
+            if (saveChanges)
+            {
+                var companyInfo = new CompanyInfo
+                    {
+                        PhoneNumber = _phoneNumber,
+                        Location = _location
+                    };
+                await CompanyInfoService.SaveCompanyInfoAsync(companyInfo);
+            }
+            else
+            {
+                _phoneNumber = _initialPhoneNumber;
+            }
+        }
+        _isEditMode = !_isEditMode;
+    }
+}
